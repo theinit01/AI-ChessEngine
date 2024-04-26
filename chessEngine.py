@@ -20,8 +20,8 @@ class GameState():
         self.blackKingLocation = (0, 4)
         self.inCheck = False
         self.pins = []
-        self.checkMate = False
-        self.staleMate = False
+        self.checkmate = False
+        self.stalemate = False
         self.checks = []
         self.moveLog = []
         self.enPassantPossible = ()  # coordinates for the square where en passant capture is possible
