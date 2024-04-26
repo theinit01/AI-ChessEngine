@@ -18,12 +18,14 @@ def loadImages():
     # can access an image by saying IMAGES["wP"]
 
 
-def drawGameState(screen, gs):
+def drawGameState(screen, gs, validMoves, sqSelected):
     drawBoard(screen)
+    highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs)
 
 # Draws the squares on the board
 def drawBoard(screen):
+    global colors
     colors = [p.Color(160, 108, 88), p.Color(255,229,204)]
     for row in range(DIMENSION):
         for col in range(DIMENSION):
@@ -46,6 +48,7 @@ def main():
     gs = GameState()
     validMoves = gs.getValidMoves()
     moveMade = False
+    animate = False # flag variable for when we need to animate a move
     loadImages() # only do this once, before the while loop
     running = True
     sqSelected = () # no square is selected, keep track of last click tuple(row, col)
@@ -73,6 +76,7 @@ def main():
                         if move == validMoves[i]:
                             gs.makeMove(validMoves[i])
                             moveMade = True
+                            animate = True
                             sqSelected = () # reset user clicks
                             playerClicks = []
                     if not moveMade:
@@ -83,12 +87,64 @@ def main():
                 if e.key == p.K_z:
                     gs.undoMove()
                     moveMade = True
+                    animate = False
+                if e.key == p.K_r:
+                    gs = GameState()
+                    validMoves = gs.getValidMoves()
+                    sqSelected = ()
+                    playerClicks = []
+                    moveMade = False
+                    animate = False
         
         if moveMade:
+            if animate:
+                animateMove(gs.moveLog[-1], screen, gs, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
 
-        drawGameState(screen, gs)
+        drawGameState(screen, gs, validMoves, sqSelected)
         clock.tick(MAX_FPS)
         p.display.flip()
+
+'''
+Highlight square selected and moves for piece
+'''
+
+def highlightSquares(screen, gs, validMoves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
+            # Highlight selected square
+            s = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)  # Make surface transparent
+            s.fill((200, 200, 100, 100))  # Fill with a lighter shade of board color
+            screen.blit(s, (c*SQ_SIZE, r*SQ_SIZE))
+            # Highlight moves from that square with a dot
+            for move in validMoves:
+                if move.startRow == r and move.startCol == c:
+                    end_square_center = (move.endCol * SQ_SIZE + SQ_SIZE // 2, move.endRow * SQ_SIZE + SQ_SIZE // 2)
+                    p.draw.circle(screen, (100, 100, 50), end_square_center, SQ_SIZE // 10)  # Draw dot with darker shade
+'''
+Animate move
+'''
+def animateMove(move, screen, board, clock):
+    global colors
+    coords = [] # list of coordinates that the animation will move through
+    dR = move.endRow - move.startRow
+    dC = move.endCol - move.startCol
+    framesPerSquare = 8 # frames to move one square
+    frameCount = (abs(dR) + abs(dC)) * framesPerSquare
+    for frame in range(frameCount + 1):
+        r, c = (move.startRow + dR*frame/frameCount, move.startCol + dC*frame/frameCount)
+        drawBoard(screen)
+        drawPieces(screen, board)
+        # erase the piece moved from its ending square
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = p.Rect(move.endCol*SQ_SIZE, move.endRow*SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        p.draw.rect(screen, color, endSquare)
+        # draw captured piece onto rectangle
+        if move.pieceCaptured != '--':
+                screen.blit(IMAGES[move.pieceCaptured], endSquare)
+        screen.blit(IMAGES[move.pieceMoved], p.Rect(c*SQ_SIZE, r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+        p.display.flip()
+        clock.tick(60)
 main()
