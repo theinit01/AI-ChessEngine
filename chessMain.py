@@ -63,8 +63,8 @@ def main():
     sqSelected = () # no square is selected, keep track of last click tuple(row, col)
     playerClicks = [] # keep track of player clicks, 2 tuples: [(6, 4), (4, 4)]
     gameOver = False
-    playerOne = False # if a human is playing white, then this will be true
-    playerTwo = False # if a human is playing black, then this will be true
+    playerOne = True # if a human is playing white, then this will be true
+    playerTwo = True # if a human is playing black, then this will be true
     while running:
         humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
@@ -114,7 +114,7 @@ def main():
         
         # AI move finder logic
         if not gameOver and not humanTurn:
-            AIMove = findBestMoveMinMax(gs, validMoves)
+            AIMove = findBestMove(gs, validMoves)
             if AIMove is None:
                 AIMove = findRandomMove(validMoves)
             gs.makeMove(AIMove)
@@ -176,11 +176,13 @@ def animateMove(move, screen, board, clock, validMoves, sqSelected):
     dC = move.endCol - move.startCol
     distance = max(abs(dR), abs(dC))  # Calculate maximum distance to determine framesPerSquare
     framesPerSquare = 10  # Default frames to move one square
-    if distance > 0:
-        framesPerSquare = 30 // distance  # Adjust framesPerSquare based on distance
-    frameCount = distance * framesPerSquare
+
+    # Calculate the duration based on the longest distance
+    frameCount = framesPerSquare * max(abs(dR), abs(dC))
+
     for frame in range(frameCount + 1):
-        r, c = (move.startRow + dR * frame / frameCount, move.startCol + dC * frame / frameCount)
+        r = move.startRow + dR * frame / frameCount
+        c = move.startCol + dC * frame / frameCount
         drawBoard(screen)
         drawPieces(screen, board, validMoves, sqSelected)
         # erase the piece moved from its ending square
@@ -189,6 +191,9 @@ def animateMove(move, screen, board, clock, validMoves, sqSelected):
         p.draw.rect(screen, color, endSquare)
         # draw captured piece onto rectangle
         if move.pieceCaptured != '--':
+            if move.isenPassantMove:
+                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == 'b' else move.endRow - 1
+                endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
         screen.blit(IMAGES[move.pieceMoved], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
         p.display.flip()
