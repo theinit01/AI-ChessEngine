@@ -21,7 +21,7 @@ This is a Python-based chess engine that allows users to play chess against the 
 
 ## Screenshots
 
-[Add screenshots or gifs of the application in action, showing how to add cities and view weather information.]
+![]([https://github.com/Your_Repository_Name/Your_GIF_Name.gif](https://github.com/theinit01/AI-ChessEngine/blob/main/assets/record.gif))
 
 ## Usage
 
