@@ -157,7 +157,6 @@ class GameState():
             kingRow = self.whiteKingLocation[0]
             kingCol = self.whiteKingLocation[1]
         else:
-            self.getCastleMoves(self.blackKingLocation[0], self.blackKingLocation[1], moves)
             kingRow = self.blackKingLocation[0]
             kingCol = self.blackKingLocation[1]
         if self.inCheck:
@@ -257,8 +256,8 @@ class GameState():
                         # 5 possibilities here in pins
                         if (0 <= j <= 3 and type == 'R') or \
                             (4 <= j <= 7 and type == 'B') or \
-                            (i == 1 and type == 'Q') or \
-                            (type == 'K'):
+                            (i == 1 and type == 'p' and ((enemyColor == 'w' and 6 <= j <= 7) or (enemyColor == 'b' and 4 <= j <= 5))) or \
+                            (type == 'Q') or (i == 1 and type == 'K'):
                             if possiblePin == (): # no piece blocking
                                 inCheck = True
                                 checks.append((endRow, endCol, d[0], d[1]))
@@ -267,7 +266,8 @@ class GameState():
                                 break
                         else: # enemy piece not applying check
                             break
-        
+                else: # off board
+                    break
         # check for knight checks
         knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
         for m in knightMoves:
@@ -445,6 +445,12 @@ class GameState():
             if move.endRow == r and move.endCol == c:
                 return True
         return False
+    
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
     
     def getCastleMoves(self, r, c, moves):
         if self.squareUnderAttack(r, c):

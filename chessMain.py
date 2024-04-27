@@ -4,6 +4,7 @@ This is the main driver file for the chess game. It will be responsible for hand
 
 import pygame as p
 from chessEngine import *
+from smartMoveFinder import *
 
 WIDTH = HEIGHT = 512 
 DIMENSION = 8   # 8 x 8 squares
@@ -50,6 +51,7 @@ def drawPieces(screen, gs, validMoves, sqSelected):
 def main():
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
+    p.display.set_caption('Chess')
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = GameState()
@@ -61,14 +63,17 @@ def main():
     sqSelected = () # no square is selected, keep track of last click tuple(row, col)
     playerClicks = [] # keep track of player clicks, 2 tuples: [(6, 4), (4, 4)]
     gameOver = False
+    playerOne = False # if a human is playing white, then this will be true
+    playerTwo = False # if a human is playing black, then this will be true
     while running:
+        humanTurn = (gs.whiteToMove and playerOne) or (not gs.whiteToMove and playerTwo)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             
             # mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
+                if not gameOver and humanTurn:
                     location = p.mouse.get_pos() # (x, y) location
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
@@ -106,6 +111,15 @@ def main():
                     moveMade = False
                     animate = False
                     gameOver = False #Reset gameFlag
+        
+        # AI move finder logic
+        if not gameOver and not humanTurn:
+            AIMove = findBestMoveMinMax(gs, validMoves)
+            if AIMove is None:
+                AIMove = findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            animate = True
         
         if moveMade:
             if animate:
@@ -146,6 +160,12 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
                 if move.startRow == r and move.startCol == c:
                     end_square_center = (move.endCol * SQ_SIZE + SQ_SIZE // 2, move.endRow * SQ_SIZE + SQ_SIZE // 2)
                     p.draw.circle(screen, (100, 100, 50), end_square_center, SQ_SIZE // 10)  # Draw dot with darker shade
+
+            if gs.inCheck:
+                kingRow, kingCol = gs.whiteKingLocation if gs.whiteToMove else gs.blackKingLocation
+                if (kingRow, kingCol) == (r, c):
+                    p.draw.rect(screen, p.Color("red"), p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE), 3)
+
 '''
 Animate move
 '''
