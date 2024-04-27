@@ -48,6 +48,70 @@ def drawPieces(screen, gs, validMoves, sqSelected):
                 end_square_center = (move.endCol * SQ_SIZE + SQ_SIZE // 2, move.endRow * SQ_SIZE + SQ_SIZE // 2)
                 p.draw.circle(screen, (100, 100, 50), end_square_center, SQ_SIZE // 10)
 
+
+'''
+Highlight square selected and moves for piece
+'''
+def highlightSquares(screen, gs, validMoves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
+            # Highlight selected square
+            s = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)  # Make surface transparent
+            s.fill((200, 200, 100, 100))  # Fill with a lighter shade of board color
+            screen.blit(s, (c*SQ_SIZE, r*SQ_SIZE))
+            # Highlight moves from that square with a dot
+            for move in validMoves:
+                if move.startRow == r and move.startCol == c:
+                    end_square_center = (move.endCol * SQ_SIZE + SQ_SIZE // 2, move.endRow * SQ_SIZE + SQ_SIZE // 2)
+                    p.draw.circle(screen, (100, 100, 50), end_square_center, SQ_SIZE // 10)  # Draw dot with darker shade
+
+            if gs.inCheck:
+                kingRow, kingCol = gs.whiteKingLocation if gs.whiteToMove else gs.blackKingLocation
+                if (kingRow, kingCol) == (r, c):
+                    p.draw.rect(screen, p.Color("red"), p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE), 3)
+
+'''
+Animate move
+'''
+def animateMove(move, screen, board, clock, validMoves, sqSelected):
+    global colors
+    coords = []  # list of coordinates that the animation will move through
+    dR = move.endRow - move.startRow
+    dC = move.endCol - move.startCol
+    distance = max(abs(dR), abs(dC))  # Calculate maximum distance to determine framesPerSquare
+    framesPerSquare = 10  # Default frames to move one square
+
+    # Calculate the duration based on the longest distance
+    frameCount = framesPerSquare * max(abs(dR), abs(dC))
+
+    for frame in range(frameCount + 1):
+        r = move.startRow + dR * frame / frameCount
+        c = move.startCol + dC * frame / frameCount
+        drawBoard(screen)
+        drawPieces(screen, board, validMoves, sqSelected)
+        # erase the piece moved from its ending square
+        color = colors[(move.endRow + move.endCol) % 2]
+        endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+        p.draw.rect(screen, color, endSquare)
+        # draw captured piece onto rectangle
+        if move.pieceCaptured != '--':
+            if move.isenPassantMove:
+                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == 'b' else move.endRow - 1
+                endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
+            screen.blit(IMAGES[move.pieceCaptured], endSquare)
+        screen.blit(IMAGES[move.pieceMoved], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+        p.display.flip()
+        clock.tick(60)
+
+def drawText(screen, text):
+    font = p.font.SysFont("Helvitca", 32, True, False)
+    textObject = font.render(text, 0, p.Color('Black'))
+    textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH/2 - textObject.get_width()/2, HEIGHT/2 - textObject.get_height()/2)
+    screen.blit(textObject, textLocation)
+    textObject = font.render(text, 0, p.Color('Gray'))
+    screen.blit(textObject, textLocation.move(2, 2))
+
 def main():
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -143,67 +207,5 @@ def main():
         clock.tick(MAX_FPS)
         p.display.flip()
 
-'''
-Highlight square selected and moves for piece
-'''
-
-def highlightSquares(screen, gs, validMoves, sqSelected):
-    if sqSelected != ():
-        r, c = sqSelected
-        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
-            # Highlight selected square
-            s = p.Surface((SQ_SIZE, SQ_SIZE), p.SRCALPHA)  # Make surface transparent
-            s.fill((200, 200, 100, 100))  # Fill with a lighter shade of board color
-            screen.blit(s, (c*SQ_SIZE, r*SQ_SIZE))
-            # Highlight moves from that square with a dot
-            for move in validMoves:
-                if move.startRow == r and move.startCol == c:
-                    end_square_center = (move.endCol * SQ_SIZE + SQ_SIZE // 2, move.endRow * SQ_SIZE + SQ_SIZE // 2)
-                    p.draw.circle(screen, (100, 100, 50), end_square_center, SQ_SIZE // 10)  # Draw dot with darker shade
-
-            if gs.inCheck:
-                kingRow, kingCol = gs.whiteKingLocation if gs.whiteToMove else gs.blackKingLocation
-                if (kingRow, kingCol) == (r, c):
-                    p.draw.rect(screen, p.Color("red"), p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE), 3)
-
-'''
-Animate move
-'''
-def animateMove(move, screen, board, clock, validMoves, sqSelected):
-    global colors
-    coords = []  # list of coordinates that the animation will move through
-    dR = move.endRow - move.startRow
-    dC = move.endCol - move.startCol
-    distance = max(abs(dR), abs(dC))  # Calculate maximum distance to determine framesPerSquare
-    framesPerSquare = 10  # Default frames to move one square
-
-    # Calculate the duration based on the longest distance
-    frameCount = framesPerSquare * max(abs(dR), abs(dC))
-
-    for frame in range(frameCount + 1):
-        r = move.startRow + dR * frame / frameCount
-        c = move.startCol + dC * frame / frameCount
-        drawBoard(screen)
-        drawPieces(screen, board, validMoves, sqSelected)
-        # erase the piece moved from its ending square
-        color = colors[(move.endRow + move.endCol) % 2]
-        endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
-        p.draw.rect(screen, color, endSquare)
-        # draw captured piece onto rectangle
-        if move.pieceCaptured != '--':
-            if move.isenPassantMove:
-                enPassantRow = (move.endRow + 1) if move.pieceCaptured[0] == 'b' else move.endRow - 1
-                endSquare = p.Rect(move.endCol * SQ_SIZE, enPassantRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
-            screen.blit(IMAGES[move.pieceCaptured], endSquare)
-        screen.blit(IMAGES[move.pieceMoved], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
-        p.display.flip()
-        clock.tick(60)
-
-def drawText(screen, text):
-    font = p.font.SysFont("Helvitca", 32, True, False)
-    textObject = font.render(text, 0, p.Color('Black'))
-    textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH/2 - textObject.get_width()/2, HEIGHT/2 - textObject.get_height()/2)
-    screen.blit(textObject, textLocation)
-    textObject = font.render(text, 0, p.Color('Gray'))
-    screen.blit(textObject, textLocation.move(2, 2))
-main()
+if __name__ == "__main__":
+    main()
