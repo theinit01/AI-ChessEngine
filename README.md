@@ -21,7 +21,10 @@ This is a Python-based chess engine that allows users to play chess against the 
 
 ## Screenshots
 
-![]([https://github.com/Your_Repository_Name/Your_GIF_Name.gif](https://github.com/theinit01/AI-ChessEngine/blob/main/assets/record.gif))
+<div style="text-align:center">
+    <img src="https://github.com/theinit01/AI-ChessEngine/blob/main/assets/record.gif" alt="Animated GIF" />
+</div>
+
 
 ## Usage
 
