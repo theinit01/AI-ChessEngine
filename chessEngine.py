@@ -63,11 +63,13 @@ class GameState():
         #castle move
         if move.isCastleMove:
             if move.endCol - move.startCol == 2: #kingside castle
-                self.board[move.endRow][move.endCol - 1] = self.board[move.endRow][move.endCol + 1] #moves the rook
-                self.board[move.endRow][move.endCol + 1] = '--' #erase old rook
+                if move.endCol + 1 < len(self.board[move.endRow]):
+                    self.board[move.endRow][move.endCol - 1] = self.board[move.endRow][move.endCol + 1] #moves the rook
+                    self.board[move.endRow][move.endCol + 1] = '--' #erase old rook
             else: #queenside castle
-                self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2] #moves the rook
-                self.board[move.endRow][move.endCol - 2] = '--' #erase old rook
+                if move.endCol - 2 >= 0:
+                    self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2] #moves the rook
+                    self.board[move.endRow][move.endCol - 2] = '--' #erase old rook
         
         self.enPassantPossibleLog.append(self.enPassantPossible)
         
@@ -154,11 +156,13 @@ class GameState():
             # undo castle move
             if move.isCastleMove:
                 if move.endCol - move.startCol == 2: #kingside castle
-                    self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 1] #moves the rook
-                    self.board[move.endRow][move.endCol - 1] = '--' #erase old rook
+                    if move.endCol + 1 < len(self.board[move.endRow]):
+                        self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 1] #moves the rook
+                        self.board[move.endRow][move.endCol - 1] = '--' #erase old rook
                 else: #queenside castle
-                    self.board[move.endRow][move.endCol - 2] = self.board[move.endRow][move.endCol + 1] #moves the rook
-                    self.board[move.endRow][move.endCol + 1] = '--' #erase old rook
+                    if move.endCol - 2 >= 0:
+                        self.board[move.endRow][move.endCol - 2] = self.board[move.endRow][move.endCol + 1] #moves the rook
+                        self.board[move.endRow][move.endCol + 1] = '--' #erase old rook
 
             self.checkmate = False
             self.stalemate = False

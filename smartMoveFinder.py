@@ -64,7 +64,7 @@ piecePositionScores = {  "wN": knightScores,
 
 CHECKMATE = 1000
 STALEMATE = 0
-DEPTH = 3
+DEPTH = 4
 
 '''
 A positive score means that the white player is winning. A negative score means that the black player is winning.
