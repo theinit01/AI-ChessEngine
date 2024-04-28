@@ -2,7 +2,6 @@
 Handling AI moves.
 """
 import random
-from functools import lru_cache
 
 pieceScore = {"K": 0, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
 
@@ -93,8 +92,37 @@ def scoreBoard(gs):
                     score += pieceScore[piece[1]] + piecePositionScore
                 if piece[0] == "b":
                     score -= pieceScore[piece[1]] + piecePositionScore
-    return score
     
+    if gs.whiteToMove:
+        opponentKingRow, opponentKingCol = gs.whiteKingLocation
+    else:
+        opponentKingRow, opponentKingCol = gs.blackKingLocation
+    
+    #Check if game is in endgame
+    whitePieces, blackPieces,endgame_phase = isEndgame(gs)
+
+    if endgame_phase:
+        #calculate distance to the closest edge
+        min_dist = min(abs(opponentKingRow - 0), abs(opponentKingRow - 7), abs(opponentKingCol - 0), abs(opponentKingCol - 7))
+        score += min_dist * 0.1
+
+        if whitePieces <= 7:
+            score -= 50
+        if blackPieces <= 7:
+            score += 50
+    return score
+
+
+def isEndgame(gs):
+    """Checks if the game is in EndGame"""
+    whitePieces = sum(piece != "--" for row in gs.board for piece in row if piece[0] == "w")
+    blackPieces = sum(piece != "--" for row in gs.board for piece in row if piece[0] == "b")
+
+    if whitePieces <= 7 or blackPieces <= 7 or (whitePieces + blackPieces <= 14):
+        return whitePieces, blackPieces, True
+    else:
+        return whitePieces, blackPieces, False
+
 def findBestMove(gs, validMoves, returnQueue):
     global nextMove
     nextMove = None

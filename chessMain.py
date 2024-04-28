@@ -35,8 +35,8 @@ def drawBoard(screen):
             color = colors[((row + col) % 2)]
             p.draw.rect(screen, color, p.Rect(col * SQ_SIZE, row * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
-# Draws the pieces on the board
 def drawPieces(screen, gs, validMoves, sqSelected):
+    ''' Draws the pieces on the board '''
     for row in range(DIMENSION):
         for col in range(DIMENSION):
             piece = gs.board[row][col]
@@ -130,7 +130,7 @@ def main():
     playerClicks = [] # keep track of player clicks, 2 tuples: [(6, 4), (4, 4)]
     gameOver = False
     playerOne = False # if a human is playing white, then this will be true
-    playerTwo = True # if a human is playing black, then this will be true
+    playerTwo = False # if a human is playing black, then this will be true
     AIThinking = False
     moveFinderProcess = None
     moveUndone = False
