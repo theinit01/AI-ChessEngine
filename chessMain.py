@@ -125,11 +125,13 @@ def main():
     moveMade = False
     animate = False # flag variable for when we need to animate a move
     loadImages() # only do this once, before the while loop
+    moveSound = p.mixer.Sound('assets/move.mp3')
+    p.display.set_icon(IMAGES['bK'])
     running = True
     sqSelected = () # no square is selected, keep track of last click tuple(row, col)
     playerClicks = [] # keep track of player clicks, 2 tuples: [(6, 4), (4, 4)]
     gameOver = False
-    playerOne = False # if a human is playing white, then this will be true
+    playerOne = True # if a human is playing white, then this will be true
     playerTwo = False # if a human is playing black, then this will be true
     AIThinking = False
     moveFinderProcess = None
@@ -160,6 +162,7 @@ def main():
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
                                 gs.makeMove(validMoves[i])
+                                moveSound.play()
                                 moveMade = True
                                 animate = True
                                 sqSelected = () # reset user clicks
@@ -206,6 +209,7 @@ def main():
                 if AIMove is None:
                     AIMove = findRandomMove(validMoves)
                 gs.makeMove(AIMove)
+                moveSound.play()
                 moveMade = True
                 animate = True
                 AIThinking = False
