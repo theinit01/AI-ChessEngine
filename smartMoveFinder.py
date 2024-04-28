@@ -2,6 +2,7 @@
 Handling AI moves.
 """
 import random
+from functools import lru_cache
 
 pieceScore = {"K": 0, "Q": 9, "R": 5, "B": 3, "N": 3, "p": 1}
 
@@ -66,6 +67,8 @@ CHECKMATE = 1000
 STALEMATE = 0
 DEPTH = 4
 
+cache = {}
+
 '''
 A positive score means that the white player is winning. A negative score means that the black player is winning.
 '''
@@ -100,10 +103,16 @@ def findBestMove(gs, validMoves, returnQueue):
     returnQueue.put(nextMove)
 
 
+
 def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier):
     global nextMove
     if depth == 0:
         return turnMultiplier * scoreBoard(gs)
+    
+    # Check if the current position is in the cache
+    position_key = str(gs.board) + str(gs.whiteToMove)
+    if position_key in cache:
+        return cache[position_key]
     
     maxScore = -CHECKMATE
     for move in validMoves:
@@ -120,6 +129,8 @@ def findMoveNegaMaxAlphaBeta(gs, validMoves, depth, alpha, beta, turnMultiplier)
         
         if alpha >= beta:
             break
+    # Cache the result for future use
+    cache[position_key] = maxScore
     return maxScore
 
 def findRandomMove(validMoves):

@@ -129,8 +129,8 @@ def main():
     sqSelected = () # no square is selected, keep track of last click tuple(row, col)
     playerClicks = [] # keep track of player clicks, 2 tuples: [(6, 4), (4, 4)]
     gameOver = False
-    playerOne = True # if a human is playing white, then this will be true
-    playerTwo = False # if a human is playing black, then this will be true
+    playerOne = False # if a human is playing white, then this will be true
+    playerTwo = True # if a human is playing black, then this will be true
     AIThinking = False
     moveFinderProcess = None
     moveUndone = False
