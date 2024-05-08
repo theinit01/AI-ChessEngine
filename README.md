@@ -31,7 +31,7 @@ This is a Python-based chess engine that allows users to play chess against the 
 
 ## Usage and Testing
 
-- Download the exe from ther [releases](https://github.com/theinit01/AI-ChessEngine/releases). Your antivirus would most probably flag it as suspicious, just ignore it :)
+- Download the exe from the [releases](https://github.com/theinit01/AI-ChessEngine/releases). Your antivirus would most probably flag it as suspicious, just ignore it :)
 - Use the mouse to select pieces/moves. 
 - Enjoy playing chess against the computer!
   
